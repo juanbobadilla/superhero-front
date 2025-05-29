@@ -1,0 +1,146 @@
+
+<div class="container my-5">
+
+  <h2 class="text-center mb-5 fw-bold superhero-title ">
+    🦸‍♂️ Lista de <span>Superhéroes</span> 🦸‍♀️
+  </h2>
+
+  @if (loading) {
+    <div class="shadow-lg alert alert-success text-center" role="alert">Cargando...</div>
+    
+  } @else {
+    @if (error) {
+      <div class="alert alert-danger text-center" role="alert">{{ error }}</div>
+    } @else {
+      @if (datos.length > 0) {
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+          @for (hero of datos; track hero.id) {
+            <div class="col">
+              
+                <div class="card h-100 shadow-sm hero-card text-white position-relative overflow-hidden" (click)="openModal(hero)"
+                    [ngStyle]="{'background-image': 'linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(' + hero.images.lg + ')', 'background-size': 'cover', 'background-position': 'center'}">
+                
+                <div class="card-body backdrop-blur-sm" style="z-index: 1;">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                    <img src="{{ hero.images.sm }}" alt="{{ hero.name }}" class="hero-img rounded-circle border border-3 border-light shadow" />
+                    <div>
+                        <h5 class="card-title mb-1">{{ hero.name }}</h5>
+                        <small class="text-light">
+                        <i class="bi bi-calendar-event-fill me-1"></i>{{ hero.biography.firstAppearance == "-" ? 'N/A' : hero.biography.firstAppearance }}<br />
+                        <i class="bi bi-geo-alt-fill me-1"></i>{{ hero.biography.placeOfBirth == "-" ? 'Desconocido' : hero.biography.placeOfBirth }}
+                        </small>
+                    </div>
+                    </div>
+
+                    <p>
+                    <i class="bi bi-person-badge me-2"></i><strong>Alias:</strong>
+                    @for (alias of hero.biography.aliases; track alias) {
+                      <span class="badge bg-primary me-1">{{ alias == "-" ? "N/A" : alias }}</span>
+                    }
+                  </p>
+
+                  <p>
+                    <i class="bi bi-building me-2"></i><strong>Editorial:</strong> {{ hero.biography.publisher == "-" ? 'N/A' : hero.biography.publisher }}
+                  </p>
+
+                  <p>
+                    <i class="bi bi-briefcase me-2"></i><strong>Ocupación:</strong> {{ hero.work.occupation == "-" ? 'N/A' : hero.work.occupation }}
+                  </p>
+                  
+                </div>
+
+                  <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50" style="z-index: 0;"></div>
+
+                </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="alert alert-warning text-center" role="alert">No se encontraron resultados.</div>
+      }
+    }
+  }
+
+  <!-- Paginación -->
+  <nav aria-label="Page navigation example" class="mt-4 d-flex justify-content-center">
+    <ul class="pagination">
+      <li class="page-item" [class.disabled]="page === 1">
+        <button class="page-link" (click)="prevPage()" aria-label="Anterior" [disabled]="page === 1">Anterior</button>
+      </li>
+      <li class="page-item disabled"><span class="page-link">Página {{ page }}</span></li>
+      <li class="page-item">
+        <button class="page-link" (click)="nextPage()">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="heroModal" tabindex="-1" aria-labelledby="heroModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg text-white" style="background-color: #1e1e2f;">
+      <div class="modal-header bg-gradient-primary text-primary">
+        <h5 class="modal-title fw-bold fs-3" id="heroModalLabel">
+          {{ selectedHero?.name }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" aria-label="Cerrar" (click)="closeModal()"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img 
+          [src]="selectedHero?.images.md" 
+          alt="{{ selectedHero?.name }}" 
+          class="rounded-circle border border-4 border-warning mb-4 shadow-sm"
+          style="width: 160px; height: 160px; object-fit: cover;"
+        />
+
+        <div class="row text-start px-3">
+          <div class="col-md-6 mb-3">
+            <h6 class="text-primary fw-semibold">🦸 Biografía</h6>
+            <p class="mb-1"><strong>Primera aparición:</strong> {{ selectedHero?.biography.firstAppearance == "-" ? "N/A" : selectedHero?.biography.firstAppearance }}</p>
+            <p><strong>Lugar de nacimiento:</strong> {{ selectedHero?.biography.placeOfBirth == "-" ? "N/A" : selectedHero?.biography.placeOfBirth }}</p>
+          </div>
+          <div class="col-md-6 mb-3">
+            <h6 class="text-primary fw-semibold">💼 Trabajo</h6>
+            <p class="mb-1"><strong>Ocupación:</strong> {{ selectedHero?.work.occupation == "-" ? "N/A" : selectedHero?.work.occupation  }}</p>
+            <p><strong>Base:</strong> {{ selectedHero?.work.base== "-"  ? "N/A" : selectedHero?.work.base }}</p>
+          </div>
+        </div>
+
+        <hr />
+
+        <div class="row text-start px-3">
+          <div class="col-md-6 mb-3">
+            <h6 class="text-primary fw-semibold">📊 Estadísticas de poder</h6>
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <span class="badge bg-success" title="Combate"><i class="bi bi-shield-fill-check me-1"></i>
+                    Combate: {{ selectedHero?.powerstats.combat =="-" ? "N/A" : selectedHero?.powerstats.combat }}
+                </span>
+                <span class="badge bg-success" title="Poder"><i class="bi bi-bolt-fill me-1"></i>
+                    Poder: {{ selectedHero?.powerstats.power =="-" ? "N/A" : selectedHero?.powerstats.power }}
+                </span>
+                <span class="badge bg-success" title="Fuerza"><i class="bi bi-funnel-fill me-1"></i>
+                    Fuerza: {{ selectedHero?.powerstats.strength =="-" ? "N/A" : selectedHero?.powerstats.strength }}
+                </span>
+                <span class="badge bg-success" title="Velocidad"><i class="bi bi-speedometer2 me-1"></i>
+                    Velocidad: {{ selectedHero?.powerstats.speed  =="-" ? "N/A" : selectedHero?.powerstats.speed }}
+                </span>
+                <span class="badge bg-success" title="Inteligencia"><i class="bi bi-lightbulb-fill me-1"></i>
+                    Inteligencia: {{ selectedHero?.powerstats.intelligence =="-" ? "N/A" : selectedHero?.powerstats.intelligence }}
+                </span>
+                <span class="badge bg-success" title="Durabilidad"><i class="bi bi-shield-fill me-1"></i>
+                    Durabilidad: {{ selectedHero?.powerstats.durability =="-" ? "N/A" : selectedHero?.powerstats.durability }}
+                </span>
+            </div>
+          </div>
+          
+          <div class="col-md-6 mb-3">
+            <h6 class="text-primary fw-semibold">🔗 Conexiones</h6>
+            <p><strong>Afiliación:</strong> {{ selectedHero?.connections.groupAffiliation == "-" ? "N/A" : selectedHero?.connections.groupAffiliation }}</p>
+            <p><strong>Familiares:</strong> {{ selectedHero?.connections.relatives == "-" ? "N/A" : selectedHero?.connections.relatives }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
